@@ -16,9 +16,25 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration // để báo cho spring đây là file config security
 public class DemoSecurityConfig {
+	
+	// dùng table default của spring security, trong DB phải có bảng users và authorities
+//	@Bean
+//	public UserDetailsManager userDetailsManager(DataSource dataSource) {// dataSource tự động được inject vào
+//		return new JdbcUserDetailsManager(dataSource); // trong DB phải có bảng users và authorities, mặc định spring tự động lấy data từ đây
+//	}
+	
+	// custome bảng theo mình muốn, và cấu hình lại như sau
 	@Bean
 	public UserDetailsManager userDetailsManager(DataSource dataSource) {// dataSource tự động được inject vào
-		return new JdbcUserDetailsManager(dataSource); // trong DB phải có bảng users và authorities, mặc định spring tự động lấy data từ đây
+		JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+
+        // define query to retrieve a user by username
+        jdbcUserDetailsManager.setUsersByUsernameQuery("select user_id, pw, active from members where user_id=?");
+
+        // define query to retrieve the authorities/roles by username
+        jdbcUserDetailsManager.setAuthoritiesByUsernameQuery("select user_id, role from roles where user_id=?");
+
+        return jdbcUserDetailsManager;
 	}
 
 	@Bean
